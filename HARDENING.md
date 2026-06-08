@@ -1,4 +1,4 @@
-# QuestShell — Security Hardening Checklist
+# Terminal King Terminal — Security Hardening Checklist
 
 ## Container Hardening
 
@@ -14,7 +14,7 @@
 ## Network Hardening
 
 - [x] **No published ports** — container only exposed on internal + proxy networks
-- [x] **Internal network** — `quest-shell-internal` is `internal: true` (no direct external access)
+- [x] **Internal network** — `terminal-king-terminal-internal` is `internal: true` (no direct external access)
 - [x] **Shared proxy network** — only talks to nginx-proxy via `nginx-proxy` external network
 - [x] **No inter-container leaks** — Ghost blog is on a separate network
 
@@ -26,13 +26,13 @@
 - [x] **Rate limiting** — 5 req/s per IP with burst of 10
 - [x] **bcrypt htpasswd** — cost factor 14 via `htpasswd -B`
 
-## SSH Security (QuestShell → Target Server)
+## SSH Security (Terminal King Terminal → Target Server)
 
 - [x] **Root login blocked** — app configured to use a non-root account
-- [x] **IP allowlist** — `QS_ALLOWED_IPS` restricts which hosts can be targeted
+- [x] **IP allowlist** — `TKT_ALLOWED_IPS` restricts which hosts can be targeted
 - [ ] **`PermitRootLogin no`** — must be set on the **target SSH server**
 - [ ] **Key-based auth preferred** — SSH keys over passwords
-- [ ] **Non-root sudo user** — create a dedicated `qsoperator` account
+- [ ] **Non-root sudo user** — create a dedicated `tktoperator` account
 - [ ] **Locked root password** — `passwd -l root` on target
 - [ ] **SSH config hardening** — see below
 
@@ -72,7 +72,7 @@
 
 ## Target SSH Server Hardening (MANDATORY)
 
-The server that QuestShell connects **to** must be hardened:
+The server that Terminal King Terminal connects **to** must be hardened:
 
 ```bash
 # /etc/ssh/sshd_config
@@ -83,7 +83,7 @@ MaxAuthTries 3
 LoginGraceTime 30
 ClientAliveInterval 300
 ClientAliveCountMax 2
-AllowUsers qsoperator
+AllowUsers tktoperator
 Protocol 2
 X11Forwarding no
 AllowTcpForwarding no
@@ -92,15 +92,15 @@ AllowAgentForwarding no
 
 ```bash
 # Create the non-root operator account
-sudo adduser --disabled-password --gecos "" qsoperator
-sudo usermod -aG sudo qsoperator
+sudo adduser --disabled-password --gecos "" tktoperator
+sudo usermod -aG sudo tktoperator
 
 # Deploy SSH key
-sudo mkdir -p /home/qsoperator/.ssh
-sudo cp ~/.ssh/authorized_keys /home/qsoperator/.ssh/
-sudo chown -R qsoperator:qsoperator /home/qsoperator/.ssh
-sudo chmod 700 /home/qsoperator/.ssh
-sudo chmod 600 /home/qsoperator/.ssh/authorized_keys
+sudo mkdir -p /home/tktoperator/.ssh
+sudo cp ~/.ssh/authorized_keys /home/tktoperator/.ssh/
+sudo chown -R tktoperator:tktoperator /home/tktoperator/.ssh
+sudo chmod 700 /home/tktoperator/.ssh
+sudo chmod 600 /home/tktoperator/.ssh/authorized_keys
 
 # Lock root
 sudo passwd -l root
@@ -114,6 +114,6 @@ sudo systemctl restart sshd
 - [ ] Pin the WebSSH2 image to a SHA digest instead of `latest`
 - [ ] Subscribe to WebSSH2 security advisories
 - [ ] Rotate htpasswd passwords every 90 days
-- [ ] Review QuestShell access logs monthly: `docker logs quest-shell`
+- [ ] Review Terminal King Terminal access logs monthly: `docker logs terminal-king-terminal`
 - [ ] Monitor nginx-proxy access logs for brute-force attempts
 - [ ] Keep Docker and the host OS updated

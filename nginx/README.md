@@ -1,4 +1,4 @@
-# QuestShell — nginx-proxy Integration
+# Terminal King Terminal — nginx-proxy Integration
 
 ## How It Works
 
@@ -8,7 +8,7 @@ The server already runs `nginx-proxy` + `acme-companion` which:
 2. Auto-generates nginx server blocks with HTTPS
 3. Routes traffic to containers by hostname
 
-QuestShell integrates by:
+Terminal King Terminal integrates by:
 - Sharing the `nginx-proxy` Docker network
 - Using a **vhost.d location override** to add `/terminal/` path routing
 - Adding HTTP Basic Auth at the nginx layer (before the app)
@@ -67,7 +67,7 @@ nginx-proxy service in `proxy/docker-compose.yml`:
 
 ```yaml
 volumes:
-  - /var/www/terminalking.com/quest-shell/.htpasswd:/etc/nginx/htpasswd/terminalking.htpasswd:ro
+  - /var/www/terminalking.com/terminal-king-terminal/.htpasswd:/etc/nginx/htpasswd/terminalking.htpasswd:ro
   # ... existing mounts
 ```
 

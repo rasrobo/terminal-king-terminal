@@ -1,14 +1,14 @@
-# QuestShell — Agent Guide
+# Terminal King Terminal — Agent Guide
 
 ## What This Is
 
-QuestShell is a white-labeled, security-hardened deployment of WebSSH2
+Terminal King Terminal is a white-labeled, security-hardened deployment of WebSSH2
 (browser-based SSH terminal) for SideQuest Studios. It runs at
 `terminalking.com/terminal/` alongside the existing Ghost blog.
 
 ## Key Constraints
 
-1. **Never break the Ghost blog** at `terminalking.com/` — QuestShell only
+1. **Never break the Ghost blog** at `terminalking.com/` — Terminal King Terminal only
    serves from `/terminal/` path
 2. **Never expose unauthenticated terminal access** — all `/terminal/*`
    routes require HTTP Basic Auth at the nginx layer

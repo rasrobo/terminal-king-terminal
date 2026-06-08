@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# QuestShell — Security & Functionality Verification
+# Terminal King Terminal — Security & Functionality Verification
 # Run after deployment to validate all security controls.
 #
 # Usage: bash scripts/verify.sh
@@ -13,7 +13,7 @@ FAIL="\033[31m✗\033[0m"
 WARN="\033[33m⚠\033[0m"
 
 echo "╔══════════════════════════════════════╗"
-echo "║  QuestShell — Verification Suite     ║"
+echo "║  Terminal King Terminal — Verification Suite     ║"
 echo "╚══════════════════════════════════════╝"
 echo
 
@@ -49,22 +49,22 @@ echo "▸ [3/7] Authenticated access…"
 # Read credentials from .env
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-QS_USER=$(grep QS_AUTH_USER "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
-QS_PASS=$(grep QS_AUTH_PASSWORD "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
+TKT_USER=$(grep TKT_AUTH_USER "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
+QS_PASS=$(grep TKT_AUTH_PASSWORD "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
 
-if [ -n "$QS_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u "${QS_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "000")
+if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "000")
   [ "$HTTP_CODE" = "200" ] && check "Authenticated /terminal/ returns 200" pass || check "Authenticated /terminal/ returns 200 (got $HTTP_CODE)" fail
 else
-  echo "  ${WARN} Skipped — configure QS_AUTH_USER/QS_AUTH_PASSWORD in .env"
+  echo "  ${WARN} Skipped — configure TKT_AUTH_USER/TKT_AUTH_PASSWORD in .env"
 fi
 
-# ── 4. QuestShell branding present ──────────────────────────────
+# ── 4. Terminal King Terminal branding present ──────────────────────────────
 echo
 echo "▸ [4/7] Branding…"
-if [ -n "$QS_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  BODY=$(curl -s -u "${QS_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
-  echo "$BODY" | grep -qi "QuestShell" && check "Page contains 'QuestShell' branding" pass || check "Page contains 'QuestShell' branding" fail
+if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
+  BODY=$(curl -s -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
+  echo "$BODY" | grep -qi "Terminal King Terminal" && check "Page contains 'Terminal King Terminal' branding" pass || check "Page contains 'Terminal King Terminal' branding" fail
   echo "$BODY" | grep -qi "WebSSH2" && check "Page does NOT contain 'WebSSH2'" fail || check "Page does NOT contain 'WebSSH2'" pass
   echo "$BODY" | grep -qi "SideQuest Studios" && check "Page credits SideQuest Studios" pass || check "Page credits SideQuest Studios" fail
 else
@@ -74,8 +74,8 @@ fi
 # ── 5. Security headers ─────────────────────────────────────────
 echo
 echo "▸ [5/7] Security headers…"
-if [ -n "$QS_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  HEADERS=$(curl -sI -u "${QS_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
+if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
+  HEADERS=$(curl -sI -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
 
   echo "$HEADERS" | grep -qi "X-Frame-Options:.*DENY" && check "X-Frame-Options: DENY" pass || check "X-Frame-Options: DENY" fail
   echo "$HEADERS" | grep -qi "X-Content-Type-Options:.*nosniff" && check "X-Content-Type-Options: nosniff" pass || check "X-Content-Type-Options: nosniff" fail
@@ -102,11 +102,11 @@ fi
 # ── 7. Container security ───────────────────────────────────────
 echo
 echo "▸ [7/7] Container hardening…"
-docker inspect quest-shell --format '{{.HostConfig.ReadonlyRootFilesystem}}' 2>/dev/null | grep -q "true" && check "Read-only root filesystem" pass || check "Read-only root filesystem" fail
-docker inspect quest-shell --format '{{.HostConfig.SecurityOpt}}' 2>/dev/null | grep -q "no-new-privileges" && check "no-new-privileges enabled" pass || check "no-new-privileges enabled" fail
+docker inspect terminal-king-terminal --format '{{.HostConfig.ReadonlyRootFilesystem}}' 2>/dev/null | grep -q "true" && check "Read-only root filesystem" pass || check "Read-only root filesystem" fail
+docker inspect terminal-king-terminal --format '{{.HostConfig.SecurityOpt}}' 2>/dev/null | grep -q "no-new-privileges" && check "no-new-privileges enabled" pass || check "no-new-privileges enabled" fail
 
-# Check quest-shell-internal is truly internal
-docker network inspect quest-shell-internal --format '{{.Internal}}' 2>/dev/null | grep -q "true" && check "Internal network is isolated" pass || check "Internal network is isolated" fail
+# Check terminal-king-terminal-internal is truly internal
+docker network inspect terminal-king-terminal-internal --format '{{.Internal}}' 2>/dev/null | grep -q "true" && check "Internal network is isolated" pass || check "Internal network is isolated" fail
 
 # ── Summary ─────────────────────────────────────────────────────
 echo
@@ -121,4 +121,4 @@ if [ "$FAIL_COUNT" -gt 0 ]; then
 fi
 
 echo
-echo "  All checks passed. QuestShell is secure. ♦"
+echo "  All checks passed. Terminal King Terminal is secure. ♦"

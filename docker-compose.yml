@@ -1,10 +1,10 @@
-# QuestShell — Docker Compose Stack
+# Terminal King Terminal — Docker Compose Stack
 # SideQuest Studios | sidequeststudios.xyz
 #
 # Architecture:
 #   terminalking.com (existing nginx-proxy with HTTPS)
 #     ├─ /*           →  terminalking-ghost (existing, UNAFFECTED)
-#     └─ /terminal/*  →  quest-shell app (internal, port 2222)
+#     └─ /terminal/*  →  terminal-king-terminal app (internal, port 2222)
 #
 # Prerequisites:
 #   - nginx-proxy + acme-companion already running on host (the existing proxy stack)
@@ -13,9 +13,9 @@
 #   - nginx vhost override placed at the path shown in scripts/setup.sh
 
 services:
-  quest-shell:
+  terminal-king-terminal:
     image: billchurch/webssh2:latest
-    container_name: quest-shell
+    container_name: terminal-king-terminal
     restart: unless-stopped
 
     # No published ports — traffic comes through nginx-proxy on the shared network
@@ -29,7 +29,7 @@ services:
       - WEBSSH2_LISTEN_PORT=2222
 
       # ── Branding ──────────────────────────────────────────────────
-      - WEBSSH2_HEADER_TEXT=QuestShell
+      - WEBSSH2_HEADER_TEXT=Terminal King Terminal
       - WEBSSH2_HEADER_BACKGROUND=#1a1a2e
 
       # ── Auth: trusted-proxy header identity ───────────────────────
@@ -37,14 +37,14 @@ services:
       # Basic-Auth header.  WebSSH2 reads this variable to bind the
       # SSH session identity.  NEVER trust this from the public internet.
       - WEBSSH2_TRUSTED_PROXY=true
-      - WEBSSH2_USERNAME=${QS_SSH_USERNAME}
-      - SSHHOST=${QS_SSH_HOST}
-      - SSHPORT=${QS_SSH_PORT}
-      - SSHUSERNAME=${QS_SSH_USERNAME}
+      - WEBSSH2_USERNAME=${TKT_SSH_USERNAME}
+      - SSHHOST=${TKT_SSH_HOST}
+      - SSHPORT=${TKT_SSH_PORT}
+      - SSHUSERNAME=${TKT_SSH_USERNAME}
 
       # ── Security: subnet restriction ──────────────────────────────
-      - WEBSSH2_FORBIDDEN_IP addresses=${QS_FORBIDDEN_IPS}
-      - WEBSSH2_ALLOWED_IP addresses=${QS_ALLOWED_IPS}
+      - WEBSSH2_FORBIDDEN_IP addresses=${TKT_FORBIDDEN_IPS}
+      - WEBSSH2_ALLOWED_IP addresses=${TKT_ALLOWED_IPS}
 
       # ── Session / socket tuning ────────────────────────────────────
       - WEBSSH2_SOCKET_MAX_LIFETIME_MS=3600000
@@ -54,10 +54,10 @@ services:
       # Override the default index.html with our branded version
       - ./branding/index.html:/srv/webssh2/dist/public/index.html:ro
       # Custom CSS overrides
-      - ./branding/quest-shell.css:/srv/webssh2/dist/public/styles/quest-shell.css:ro
+      - ./branding/terminal-king-terminal.css:/srv/webssh2/dist/public/styles/terminal-king-terminal.css:ro
 
     networks:
-      - quest-shell-internal
+      - terminal-king-terminal-internal
       - nginx-proxy
 
     # Production hardening: read-only rootfs, drop all caps, no new privs
@@ -93,7 +93,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-        tag: "quest-shell"
+        tag: "terminal-king-terminal"
 
     # Labels for nginx-proxy auto-discovery
     # VIRTUAL_HOST triggers nginx-proxy to generate a server block for terminalking.com
@@ -102,7 +102,7 @@ services:
       - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
 
 networks:
-  quest-shell-internal:
+  terminal-king-terminal-internal:
     driver: bridge
     internal: true
     ipam:

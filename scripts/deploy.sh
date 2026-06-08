@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# QuestShell — Deploy Script
-# Launches/updates the QuestShell stack without affecting the Ghost blog.
+# Terminal King Terminal — Deploy Script
+# Launches/updates the Terminal King Terminal stack without affecting the Ghost blog.
 #
 # Usage: bash scripts/deploy.sh [--rollback]
 
@@ -13,15 +13,15 @@ DOMAIN="terminalking.com"
 
 # ── Rollback ────────────────────────────────────────────────────
 if [[ "${1:-}" == "--rollback" ]]; then
-  echo "⟲ Rolling back QuestShell…"
+  echo "⟲ Rolling back Terminal King Terminal…"
   cd "$PROJECT_DIR"
   docker compose down --remove-orphans
-  echo "✓ QuestShell stopped. Ghost blog is unaffected."
+  echo "✓ Terminal King Terminal stopped. Ghost blog is unaffected."
   exit 0
 fi
 
 echo "╔══════════════════════════════════════╗"
-echo "║  QuestShell — Deploy                 ║"
+echo "║  Terminal King Terminal — Deploy                 ║"
 echo "╚══════════════════════════════════════╝"
 echo
 
@@ -67,7 +67,7 @@ fi
 
 # ── Deploy ─────────────────────────────────────────────────────
 echo
-echo "▸ Deploying QuestShell…"
+echo "▸ Deploying Terminal King Terminal…"
 docker compose pull
 docker compose up -d --remove-orphans
 
@@ -75,15 +75,15 @@ echo
 echo "▸ Waiting for health check…"
 HEALTHY=false
 for i in $(seq 1 12); do
-  STATUS=$(docker inspect quest-shell --format='{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
+  STATUS=$(docker inspect terminal-king-terminal --format='{{.State.Health.Status}}' 2>/dev/null || echo "unknown")
   if [ "$STATUS" = "healthy" ]; then
-    echo "  ✓ QuestShell is healthy"
+    echo "  ✓ Terminal King Terminal is healthy"
     HEALTHY=true
     break
   fi
   if [ "$i" -eq 12 ]; then
     echo "  ⚠ Health check timeout (status: ${STATUS})"
-    echo "    Check logs: docker logs quest-shell"
+    echo "    Check logs: docker logs terminal-king-terminal"
   fi
   sleep 5
 done
@@ -113,9 +113,9 @@ else
   echo "⚠ Deployment finished with warnings. Review output above."
 fi
 echo
-echo "  QuestShell: https://${DOMAIN}/terminal/"
+echo "  Terminal King Terminal: https://${DOMAIN}/terminal/"
 echo "  Ghost blog: https://${DOMAIN}/  (should be unaffected)"
 echo
 echo "  Full verify: bash scripts/verify.sh"
 echo "  Rollback:    bash scripts/deploy.sh --rollback"
-echo "  Logs:        docker logs -f quest-shell"
+echo "  Logs:        docker logs -f terminal-king-terminal"

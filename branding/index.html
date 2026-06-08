@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>QuestShell — Secure Browser Terminal</title>
-  <link rel="icon" type="image/svg+xml" href="/terminal/public/images/quest-shell-icon.svg">
+  <title>Terminal King Terminal — Secure Browser Terminal</title>
+  <link rel="icon" type="image/svg+xml" href="/terminal/public/images/terminal-king-terminal-icon.svg">
   <link rel="stylesheet" href="/terminal/public/xterm.css">
-  <link rel="stylesheet" href="/terminal/public/styles/quest-shell.css">
+  <link rel="stylesheet" href="/terminal/public/styles/terminal-king-terminal.css">
   <style>
     /* Inline critical CSS for fast first paint */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,7 +20,7 @@
       flex-direction: column;
       overflow: hidden;
     }
-    #qs-header {
+    #tkt-header {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
       border-bottom: 2px solid #0f3460;
       padding: 8px 16px;
@@ -30,12 +30,12 @@
       flex-shrink: 0;
       height: 48px;
     }
-    #qs-logo {
+    #tkt-logo {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    #qs-logo-icon {
+    #tkt-logo-icon {
       width: 28px;
       height: 28px;
       background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
@@ -47,7 +47,7 @@
       font-size: 14px;
       color: #fff;
     }
-    #qs-logo-text {
+    #tkt-logo-text {
       font-size: 18px;
       font-weight: 700;
       background: linear-gradient(90deg, #e94560, #533483);
@@ -55,14 +55,14 @@
       -webkit-text-fill-color: transparent;
       letter-spacing: 0.5px;
     }
-    #qs-session-info {
+    #tkt-session-info {
       font-size: 12px;
       color: #8892b0;
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    #qs-user-badge {
+    #tkt-user-badge {
       background: #0f3460;
       padding: 3px 10px;
       border-radius: 12px;
@@ -83,7 +83,7 @@
       bottom: 0;
       padding: 4px;
     }
-    #qs-statusbar {
+    #tkt-statusbar {
       background: #0f3460;
       border-top: 1px solid #1a4080;
       padding: 4px 16px;
@@ -94,33 +94,33 @@
       flex-shrink: 0;
       height: 24px;
     }
-    #qs-status-indicator {
+    #tkt-status-indicator {
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
-    #qs-status-dot {
+    #tkt-status-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
       background: #e94560;
       transition: background 0.3s;
     }
-    #qs-status-dot.connected { background: #64ffda; box-shadow: 0 0 6px #64ffda; }
-    #qs-status-dot.connecting { background: #f0a500; animation: blink 1s infinite; }
+    #tkt-status-dot.connected { background: #64ffda; box-shadow: 0 0 6px #64ffda; }
+    #tkt-status-dot.connecting { background: #f0a500; animation: blink 1s infinite; }
     @keyframes blink { 50% { opacity: 0.3; } }
   </style>
 </head>
 <body>
 
-  <header id="qs-header">
-    <div id="qs-logo">
-      <div id="qs-logo-icon">QS</div>
-      <span id="qs-logo-text">QuestShell</span>
+  <header id="tkt-header">
+    <div id="tkt-logo">
+      <div id="tkt-logo-icon">QS</div>
+      <span id="tkt-logo-text">Terminal King Terminal</span>
     </div>
-    <div id="qs-session-info">
-      <span id="qs-user-badge">● <span id="qs-username">connecting…</span></span>
-      <span id="qs-host-info"></span>
+    <div id="tkt-session-info">
+      <span id="tkt-user-badge">● <span id="tkt-username">connecting…</span></span>
+      <span id="tkt-host-info"></span>
     </div>
   </header>
 
@@ -128,13 +128,13 @@
     <div id="terminal"></div>
   </div>
 
-  <footer id="qs-statusbar">
-    <div id="qs-status-indicator">
-      <span id="qs-status-dot"></span>
-      <span id="qs-status-text">Initializing…</span>
+  <footer id="tkt-statusbar">
+    <div id="tkt-status-indicator">
+      <span id="tkt-status-dot"></span>
+      <span id="tkt-status-text">Initializing…</span>
     </div>
-    <div id="qs-footer-right">
-      <span>QuestShell v1.0</span> · <span>SideQuest Studios</span> · <span id="qs-latency"></span>
+    <div id="tkt-footer-right">
+      <span>Terminal King Terminal v1.0</span> · <span>SideQuest Studios</span> · <span id="tkt-latency"></span>
     </div>
   </footer>
 
@@ -148,11 +148,11 @@
 
       // ── DOM refs ──────────────────────────────────────────────
       const $ = id => document.getElementById(id);
-      const statusDot = $('qs-status-dot');
-      const statusText = $('qs-status-text');
-      const usernameEl = $('qs-username');
-      const hostInfoEl = $('qs-host-info');
-      const latencyEl = $('qs-latency');
+      const statusDot = $('tkt-status-dot');
+      const statusText = $('tkt-status-text');
+      const usernameEl = $('tkt-username');
+      const hostInfoEl = $('tkt-host-info');
+      const latencyEl = $('tkt-latency');
 
       // ── State ──────────────────────────────────────────────────
       let socket = null;
@@ -219,7 +219,7 @@
 
       // ── Socket connection ──────────────────────────────────────
       function connectSocket() {
-        setStatus('connecting', 'Connecting to QuestShell…');
+        setStatus('connecting', 'Connecting to Terminal King Terminal…');
 
         // Read the authenticated user from the page (set by server or header)
         const urlParams = new URLSearchParams(window.location.search);
@@ -239,7 +239,7 @@
         socket.on('connect', function() {
           connected = true;
           setStatus('connected', 'Connected');
-          term.writeln('\x1b[32m✓ QuestShell session started\x1b[0m');
+          term.writeln('\x1b[32m✓ Terminal King Terminal session started\x1b[0m');
           term.writeln('');
 
           // Request session with backend-controlled params

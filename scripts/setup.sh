@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# QuestShell — Initial Setup Script
+# Terminal King Terminal — Initial Setup Script
 # Run ONCE on the server after cloning the repo.
 #
 # Usage: bash scripts/setup.sh
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "╔══════════════════════════════════════╗"
-echo "║  QuestShell — Setup                  ║"
+echo "║  Terminal King Terminal — Setup                  ║"
 echo "║  SideQuest Studios                   ║"
 echo "╚══════════════════════════════════════╝"
 echo
@@ -49,16 +49,16 @@ fi
 echo
 echo "[3/6] Setting up HTTP Basic Auth…"
 
-HTPASSWD_DIR="/var/www/terminalking.com/quest-shell"
+HTPASSWD_DIR="/var/www/terminalking.com/terminal-king-terminal"
 HTPASSWD_FILE="$HTPASSWD_DIR/.htpasswd"
 
 sudo mkdir -p "$HTPASSWD_DIR"
 
 if [ ! -f "$HTPASSWD_FILE" ]; then
   echo "  Creating htpasswd file…"
-  echo -n "  Enter QuestShell admin username: "
-  read -r QS_USER
-  htpasswd -cB "$HTPASSWD_FILE" "$QS_USER"
+  echo -n "  Enter Terminal King Terminal admin username: "
+  read -r TKT_USER
+  htpasswd -cB "$HTPASSWD_FILE" "$TKT_USER"
   echo "  ✓ Created $HTPASSWD_FILE"
 else
   echo "  ✓ htpasswd already exists at $HTPASSWD_FILE"

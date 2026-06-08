@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# QuestShell — Password Generator
+# Terminal King Terminal — Password Generator
 # Generates secure random passwords and htpasswd entries.
 
 set -euo pipefail
 
-echo "QuestShell — Password Generator"
+echo "Terminal King Terminal — Password Generator"
 echo
 
 echo "# Random hex password (for .env):"

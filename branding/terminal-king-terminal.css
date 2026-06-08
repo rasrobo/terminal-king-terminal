@@ -1,31 +1,31 @@
 /**
- * QuestShell — Custom Styles
+ * Terminal King Terminal — Custom Styles
  * SideQuest Studios | sidequeststudios.xyz
  *
- * Overrides for the WebSSH2 default UI to present QuestShell branding.
+ * Overrides for the WebSSH2 default UI to present Terminal King Terminal branding.
  */
 
 /* ── Root variables ──────────────────────────────────────────── */
 :root {
-  --qs-bg-primary: #0a0a1a;
-  --qs-bg-secondary: #1a1a2e;
-  --qs-bg-tertiary: #16213e;
-  --qs-accent: #e94560;
-  --qs-accent-alt: #533483;
-  --qs-cyan: #64ffda;
-  --qs-text: #e0e0e0;
-  --qs-text-dim: #8892b0;
-  --qs-text-muted: #5a6a8a;
-  --qs-border: #0f3460;
-  --qs-success: #64ffda;
-  --qs-warning: #f0a500;
-  --qs-error: #e94560;
+  --tkt-bg-primary: #0a0a1a;
+  --tkt-bg-secondary: #1a1a2e;
+  --tkt-bg-tertiary: #16213e;
+  --tkt-accent: #e94560;
+  --tkt-accent-alt: #533483;
+  --tkt-cyan: #64ffda;
+  --tkt-text: #e0e0e0;
+  --tkt-text-dim: #8892b0;
+  --tkt-text-muted: #5a6a8a;
+  --tkt-border: #0f3460;
+  --tkt-success: #64ffda;
+  --tkt-warning: #f0a500;
+  --tkt-error: #e94560;
 }
 
 /* ── Global overrides ───────────────────────────────────────── */
 body {
-  background: var(--qs-bg-primary) !important;
-  color: var(--qs-text) !important;
+  background: var(--tkt-bg-primary) !important;
+  color: var(--tkt-text) !important;
 }
 
 /* Hide any upstream WebSSH2 branding strings */
@@ -42,11 +42,11 @@ body {
 }
 
 .xterm .xterm-viewport {
-  background-color: var(--qs-bg-primary) !important;
+  background-color: var(--tkt-bg-primary) !important;
 }
 
 .xterm .xterm-screen {
-  background-color: var(--qs-bg-primary) !important;
+  background-color: var(--tkt-bg-primary) !important;
 }
 
 /* Scrollbar styling */
@@ -55,16 +55,16 @@ body {
 }
 
 .xterm .xterm-viewport::-webkit-scrollbar-track {
-  background: var(--qs-bg-secondary);
+  background: var(--tkt-bg-secondary);
 }
 
 .xterm .xterm-viewport::-webkit-scrollbar-thumb {
-  background: var(--qs-border);
+  background: var(--tkt-border);
   border-radius: 4px;
 }
 
 .xterm .xterm-viewport::-webkit-scrollbar-thumb:hover {
-  background: var(--qs-accent-alt);
+  background: var(--tkt-accent-alt);
 }
 
 /* ── Connection form overrides ───────────────────────────────── */
@@ -78,9 +78,9 @@ body {
   display: none !important;
 }
 
-/* ── QuestShell-specific components ─────────────────────────── */
-.qs-btn {
-  background: linear-gradient(135deg, var(--qs-accent) 0%, var(--qs-accent-alt) 100%);
+/* ── Terminal King Terminal-specific components ─────────────────────────── */
+.tkt-btn {
+  background: linear-gradient(135deg, var(--tkt-accent) 0%, var(--tkt-accent-alt) 100%);
   color: #fff;
   border: none;
   padding: 8px 20px;
@@ -92,26 +92,26 @@ body {
   transition: opacity 0.2s, transform 0.1s;
 }
 
-.qs-btn:hover {
+.tkt-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
 }
 
-.qs-btn:active {
+.tkt-btn:active {
   transform: translateY(0);
 }
 
-.qs-btn-secondary {
-  background: var(--qs-bg-tertiary);
-  border: 1px solid var(--qs-border);
-  color: var(--qs-text);
+.tkt-btn-secondary {
+  background: var(--tkt-bg-tertiary);
+  border: 1px solid var(--tkt-border);
+  color: var(--tkt-text);
 }
 
 /* ── Loading / splash screen ─────────────────────────────────── */
-#qs-splash {
+#tkt-splash {
   position: fixed;
   inset: 0;
-  background: var(--qs-bg-primary);
+  background: var(--tkt-bg-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -120,52 +120,52 @@ body {
   transition: opacity 0.5s;
 }
 
-#qs-splash.hidden {
+#tkt-splash.hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-#qs-splash-logo {
+#tkt-splash-logo {
   font-size: 48px;
   font-weight: 900;
-  background: linear-gradient(135deg, var(--qs-accent), var(--qs-accent-alt));
+  background: linear-gradient(135deg, var(--tkt-accent), var(--tkt-accent-alt));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 16px;
   letter-spacing: 2px;
 }
 
-#qs-splash-tagline {
-  color: var(--qs-text-dim);
+#tkt-splash-tagline {
+  color: var(--tkt-text-dim);
   font-size: 14px;
   margin-bottom: 32px;
 }
 
-#qs-splash-loader {
+#tkt-splash-loader {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--qs-border);
-  border-top-color: var(--qs-cyan);
+  border: 3px solid var(--tkt-border);
+  border-top-color: var(--tkt-cyan);
   border-radius: 50%;
-  animation: qs-spin 0.8s linear infinite;
+  animation: tkt-spin 0.8s linear infinite;
 }
 
-@keyframes qs-spin {
+@keyframes tkt-spin {
   to { transform: rotate(360deg); }
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  #qs-header {
+  #tkt-header {
     padding: 6px 12px;
     height: 42px;
   }
 
-  #qs-logo-text {
+  #tkt-logo-text {
     font-size: 15px;
   }
 
-  #qs-session-info {
+  #tkt-session-info {
     font-size: 10px;
   }
 
