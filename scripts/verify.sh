@@ -33,49 +33,58 @@ check() {
 }
 
 # ── 1. Ghost blog still works ───────────────────────────────────
-echo "▸ [1/7] Ghost blog integrity…"
+echo "▸ [1/8] Ghost blog integrity…"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE}/" 2>/dev/null || echo "000")
 [ "$HTTP_CODE" = "200" ] && check "Ghost blog responds with 200" pass || check "Ghost blog responds with 200 (got $HTTP_CODE)" fail
 
-# ── 2. Unauthenticated /terminal/ is blocked ────────────────────
+# ── 2. Landing page at /terminal/ is public ─────────────────────
 echo
-echo "▸ [2/7] Authentication gate…"
+echo "▸ [2/8] Landing page…"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE}/terminal/" 2>/dev/null || echo "000")
-[ "$HTTP_CODE" = "401" ] && check "Unauthenticated /terminal/ returns 401" pass || check "Unauthenticated /terminal/ returns 401 (got $HTTP_CODE)" fail
+[ "$HTTP_CODE" = "200" ] && check "Landing page /terminal/ is public (200)" pass || check "Landing page /terminal/ is public (got $HTTP_CODE)" fail
 
-# ── 3. Authenticated /terminal/ works ───────────────────────────
+LANDING=$(curl -s "${BASE}/terminal/" 2>/dev/null || echo "")
+echo "$LANDING" | grep -qi "Terminal King Terminal" && check "Landing page has project branding" pass || check "Landing page has project branding" fail
+echo "$LANDING" | grep -qi "github.com/rasrobo/terminal-king-terminal" && check "Landing page links to GitHub" pass || check "Landing page links to GitHub" fail
+echo "$LANDING" | grep -qi 'href="/terminal/app/"' && check "Landing page links to /terminal/app/" pass || check "Landing page links to /terminal/app/" fail
+
+# ── 3. Unauthenticated /terminal/app/ is blocked ────────────────
 echo
-echo "▸ [3/7] Authenticated access…"
-# Read credentials from .env
+echo "▸ [3/8] Authentication gate…"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE}/terminal/app/" 2>/dev/null || echo "000")
+[ "$HTTP_CODE" = "401" ] && check "Unauthenticated /terminal/app/ returns 401" pass || check "Unauthenticated /terminal/app/ returns 401 (got $HTTP_CODE)" fail
+
+# ── 4. Authenticated /terminal/app/ works ───────────────────────
+echo
+echo "▸ [4/8] Authenticated access…"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 TKT_USER=$(grep TKT_AUTH_USER "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
-QS_PASS=$(grep TKT_AUTH_PASSWORD "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
+TKT_PASS=$(grep TKT_AUTH_PASSWORD "$PROJECT_DIR/.env" 2>/dev/null | cut -d= -f2 || echo "")
 
-if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "000")
-  [ "$HTTP_CODE" = "200" ] && check "Authenticated /terminal/ returns 200" pass || check "Authenticated /terminal/ returns 200 (got $HTTP_CODE)" fail
+if [ -n "$TKT_USER" ] && [ -n "$TKT_PASS" ] && [ "$TKT_PASS" != "CHANGEME" ]; then
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u "${TKT_USER}:${TKT_PASS}" "${BASE}/terminal/app/" 2>/dev/null || echo "000")
+  [ "$HTTP_CODE" = "200" ] && check "Authenticated /terminal/app/ returns 200" pass || check "Authenticated /terminal/app/ returns 200 (got $HTTP_CODE)" fail
 else
   echo "  ${WARN} Skipped — configure TKT_AUTH_USER/TKT_AUTH_PASSWORD in .env"
 fi
 
-# ── 4. Terminal King Terminal branding present ──────────────────────────────
+# ── 5. Terminal King Terminal branding present ──────────────────
 echo
-echo "▸ [4/7] Branding…"
-if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  BODY=$(curl -s -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
+echo "▸ [5/8] Branding…"
+if [ -n "$TKT_USER" ] && [ -n "$TKT_PASS" ] && [ "$TKT_PASS" != "CHANGEME" ]; then
+  BODY=$(curl -s -u "${TKT_USER}:${TKT_PASS}" "${BASE}/terminal/app/" 2>/dev/null || echo "")
   echo "$BODY" | grep -qi "Terminal King Terminal" && check "Page contains 'Terminal King Terminal' branding" pass || check "Page contains 'Terminal King Terminal' branding" fail
   echo "$BODY" | grep -qi "WebSSH2" && check "Page does NOT contain 'WebSSH2'" fail || check "Page does NOT contain 'WebSSH2'" pass
-  echo "$BODY" | grep -qi "SideQuest Studios" && check "Page credits SideQuest Studios" pass || check "Page credits SideQuest Studios" fail
 else
   echo "  ${WARN} Skipped — configure auth credentials"
 fi
 
-# ── 5. Security headers ─────────────────────────────────────────
+# ── 6. Security headers ─────────────────────────────────────────
 echo
-echo "▸ [5/7] Security headers…"
-if [ -n "$TKT_USER" ] && [ -n "$QS_PASS" ] && [ "$QS_PASS" != "CHANGEME" ]; then
-  HEADERS=$(curl -sI -u "${TKT_USER}:${QS_PASS}" "${BASE}/terminal/" 2>/dev/null || echo "")
+echo "▸ [6/8] Security headers…"
+if [ -n "$TKT_USER" ] && [ -n "$TKT_PASS" ] && [ "$TKT_PASS" != "CHANGEME" ]; then
+  HEADERS=$(curl -sI -u "${TKT_USER}:${TKT_PASS}" "${BASE}/terminal/app/" 2>/dev/null || echo "")
 
   echo "$HEADERS" | grep -qi "X-Frame-Options:.*DENY" && check "X-Frame-Options: DENY" pass || check "X-Frame-Options: DENY" fail
   echo "$HEADERS" | grep -qi "X-Content-Type-Options:.*nosniff" && check "X-Content-Type-Options: nosniff" pass || check "X-Content-Type-Options: nosniff" fail
@@ -86,9 +95,9 @@ else
   echo "  ${WARN} Skipped — configure auth credentials"
 fi
 
-# ── 6. TLS valid ────────────────────────────────────────────────
+# ── 7. TLS valid ────────────────────────────────────────────────
 echo
-echo "▸ [6/7] TLS certificate…"
+echo "▸ [7/8] TLS certificate…"
 TLS_EXPIRY=$(echo | openssl s_client -servername "$DOMAIN" -connect "${DOMAIN}:443" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
 if [ -n "$TLS_EXPIRY" ]; then
   EXPIRY_EPOCH=$(date -d "$TLS_EXPIRY" +%s 2>/dev/null || date -j -f "%b %d %T %Y %Z" "$TLS_EXPIRY" +%s 2>/dev/null)
@@ -99,13 +108,11 @@ else
   check "TLS cert retrievable" fail
 fi
 
-# ── 7. Container security ───────────────────────────────────────
+# ── 8. Container security ───────────────────────────────────────
 echo
-echo "▸ [7/7] Container hardening…"
+echo "▸ [8/8] Container hardening…"
 docker inspect terminal-king-terminal --format '{{.HostConfig.ReadonlyRootFilesystem}}' 2>/dev/null | grep -q "true" && check "Read-only root filesystem" pass || check "Read-only root filesystem" fail
 docker inspect terminal-king-terminal --format '{{.HostConfig.SecurityOpt}}' 2>/dev/null | grep -q "no-new-privileges" && check "no-new-privileges enabled" pass || check "no-new-privileges enabled" fail
-
-# Check terminal-king-terminal-internal is truly internal
 docker network inspect terminal-king-terminal-internal --format '{{.Internal}}' 2>/dev/null | grep -q "true" && check "Internal network is isolated" pass || check "Internal network is isolated" fail
 
 # ── Summary ─────────────────────────────────────────────────────

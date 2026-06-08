@@ -4,7 +4,6 @@
 
 **Terminal King Terminal** is a production-ready, white-labeled browser-based SSH
 terminal built on [WebSSH2](https://github.com/billchurch/webssh2) (MIT licensed).
-Deployed at [terminalking.com/terminal](https://terminalking.com/terminal/).
 
 **Repository:** [github.com/rasrobo/terminal-king-terminal](https://github.com/rasrobo/terminal-king-terminal)
 
@@ -15,15 +14,20 @@ Built and maintained by **[SideQuest Studios](https://sidequeststudios.xyz)**.
 ```
 terminalking.com ─── existing nginx-proxy + acme-companion (HTTPS)
 │
-├── /           → terminalking-ghost (Ghost blog, UNAFFECTED)
+├── /              → terminalking-ghost (Ghost blog, UNAFFECTED)
 │
-└── /terminal/  → terminal-king-terminal (billchurch/webssh2, internal only)
-                    ├── HTTP Basic Auth (nginx layer, BEFORE app)
-                    ├── Trusted proxy headers (X-Authenticated-User)
-                    ├── WebSocket upgrade (for xterm.js terminal I/O)
-                    ├── Branded UI (Terminal King Terminal)
-                    ├── IP allowlist (backend-controlled targets)
-                    └── Non-root SSH sessions only
+└── /terminal/     → public landing page (no auth)
+                     ├── Explains the project
+                     ├── Links to GitHub
+                     └── "Launch Terminal" button
+                     │
+                     └── /terminal/app/ → actual terminal (behind auth)
+                          ├── HTTP Basic Auth (nginx layer, BEFORE app)
+                          ├── Trusted proxy headers (X-Authenticated-User)
+                          ├── WebSocket upgrade (for xterm.js terminal I/O)
+                          ├── Branded UI (Terminal King Terminal)
+                          ├── IP allowlist (backend-controlled targets)
+                          └── Non-root SSH sessions only
 ```
 
 ## File Tree
@@ -44,9 +48,12 @@ terminal-king-terminal/
 │   └── README.md                   # nginx-proxy integration guide
 │
 ├── branding/
-│   ├── index.html                  # Branded landing page
-│   ├── terminal-king-terminal.css  # Custom styles
+│   ├── index.html                  # Branded terminal UI (xterm.js)
+│   ├── terminal-king-terminal.css  # Custom terminal styles
 │   └── terminal-king-terminal-icon.svg  # Favicon
+│
+├── landing-page/
+│   └── index.html                  # Public landing page at /terminal/
 │
 └── scripts/
     ├── setup.sh                    # One-time server setup
@@ -135,7 +142,7 @@ docker compose pull && docker compose up -d
 bash scripts/verify.sh
 ```
 
-Rollback (stops Terminal King Terminal, Ghost blog unaffected):
+Rollback (stops the terminal, Ghost blog + landing page unaffected):
 
 ```bash
 bash scripts/deploy.sh --rollback
@@ -156,19 +163,21 @@ bash scripts/verify.sh
 
 Checks:
 1. Ghost blog still functional
-2. Unauthenticated `/terminal/` returns 401
-3. Authenticated `/terminal/` returns 200
-4. Branding says "Terminal King Terminal"
-5. Security headers present (HSTS, CSP, X-Frame-Options)
-6. TLS certificate valid
-7. Container hardening (read-only fs, no-new-privileges, internal network)
+2. Landing page at `/terminal/` is publicly accessible
+3. Unauthenticated `/terminal/app/` returns 401
+4. Authenticated `/terminal/app/` returns 200
+5. Branding says "Terminal King Terminal"
+6. Security headers present (HSTS, CSP, X-Frame-Options)
+7. TLS certificate valid
+8. Container hardening (read-only fs, no-new-privileges, internal network)
 
 ## Security Notes
 
 - **Root SSH login is blocked** — uses a non-root service account
 - **No public connection form** — targets are backend-controlled via `.env`
 - **IP allowlisting** — only approved target IPs
-- **Auth before app** — nginx validates credentials before any request reaches the app
+- **Auth before app** — nginx validates credentials before any request reaches the terminal
+- **Landing page is public** — `/terminal/` teaches about the project, no auth needed
 - **`.env` and `.htpasswd` are gitignored**
 - **Read-only container** — only `/tmp` is writable
 
