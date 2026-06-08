@@ -1,0 +1,13 @@
+# Secrets
+.env
+nginx/.htpasswd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo

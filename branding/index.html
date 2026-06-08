@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>QuestShell — Secure Browser Terminal</title>
+  <link rel="icon" type="image/svg+xml" href="/terminal/public/images/quest-shell-icon.svg">
+  <link rel="stylesheet" href="/terminal/public/xterm.css">
+  <link rel="stylesheet" href="/terminal/public/styles/quest-shell.css">
+  <style>
+    /* Inline critical CSS for fast first paint */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a1a;
+      color: #e0e0e0;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #qs-header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-bottom: 2px solid #0f3460;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      height: 48px;
+    }
+    #qs-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #qs-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      color: #fff;
+    }
+    #qs-logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #e94560, #533483);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+    #qs-session-info {
+      font-size: 12px;
+      color: #8892b0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #qs-user-badge {
+      background: #0f3460;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: #64ffda;
+      border: 1px solid #1a4080;
+    }
+    #terminal-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #terminal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 4px;
+    }
+    #qs-statusbar {
+      background: #0f3460;
+      border-top: 1px solid #1a4080;
+      padding: 4px 16px;
+      font-size: 11px;
+      color: #5a6a8a;
+      display: flex;
+      justify-content: space-between;
+      flex-shrink: 0;
+      height: 24px;
+    }
+    #qs-status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #qs-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #e94560;
+      transition: background 0.3s;
+    }
+    #qs-status-dot.connected { background: #64ffda; box-shadow: 0 0 6px #64ffda; }
+    #qs-status-dot.connecting { background: #f0a500; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0.3; } }
+  </style>
+</head>
+<body>
+
+  <header id="qs-header">
+    <div id="qs-logo">
+      <div id="qs-logo-icon">QS</div>
+      <span id="qs-logo-text">QuestShell</span>
+    </div>
+    <div id="qs-session-info">
+      <span id="qs-user-badge">● <span id="qs-username">connecting…</span></span>
+      <span id="qs-host-info"></span>
+    </div>
+  </header>
+
+  <div id="terminal-container">
+    <div id="terminal"></div>
+  </div>
+
+  <footer id="qs-statusbar">
+    <div id="qs-status-indicator">
+      <span id="qs-status-dot"></span>
+      <span id="qs-status-text">Initializing…</span>
+    </div>
+    <div id="qs-footer-right">
+      <span>QuestShell v1.0</span> · <span>SideQuest Studios</span> · <span id="qs-latency"></span>
+    </div>
+  </footer>
+
+  <script src="/terminal/public/xterm.js"></script>
+  <script src="/terminal/public/xterm-addon-fit.js"></script>
+  <script src="/terminal/public/xterm-addon-web-links.js"></script>
+  <script src="/terminal/public/socket.io.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      // ── DOM refs ──────────────────────────────────────────────
+      const $ = id => document.getElementById(id);
+      const statusDot = $('qs-status-dot');
+      const statusText = $('qs-status-text');
+      const usernameEl = $('qs-username');
+      const hostInfoEl = $('qs-host-info');
+      const latencyEl = $('qs-latency');
+
+      // ── State ──────────────────────────────────────────────────
+      let socket = null;
+      let term = null;
+      let connected = false;
+      let sessionUser = 'operator';
+
+      // ── Terminal init ──────────────────────────────────────────
+      function initTerminal() {
+        term = new Terminal({
+          cursorBlink: true,
+          fontSize: 14,
+          fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace",
+          theme: {
+            background: '#0a0a1a',
+            foreground: '#e0e0e0',
+            cursor: '#64ffda',
+            cursorAccent: '#0a0a1a',
+            selection: 'rgba(100, 255, 218, 0.15)',
+            black: '#0a0a1a',
+            red: '#e94560',
+            green: '#64ffda',
+            yellow: '#f0a500',
+            blue: '#533483',
+            magenta: '#e94560',
+            cyan: '#64ffda',
+            white: '#e0e0e0',
+            brightBlack: '#2a2a4a',
+            brightRed: '#ff6b8a',
+            brightGreen: '#a0fff0',
+            brightYellow: '#ffcc00',
+            brightBlue: '#7b5ea7',
+            brightMagenta: '#ff6b8a',
+            brightCyan: '#a0fff0',
+            brightWhite: '#ffffff'
+          },
+          allowProposedApi: true
+        });
+
+        const fitAddon = new FitAddon.FitAddon();
+        const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+        term.loadAddon(fitAddon);
+        term.loadAddon(webLinksAddon);
+        term.open($('terminal'));
+        fitAddon.fit();
+
+        // Responsive resize
+        window.addEventListener('resize', () => {
+          fitAddon.fit();
+          if (socket && connected) {
+            socket.emit('resize', { cols: term.cols, rows: term.rows });
+          }
+        });
+
+        // Terminal input → socket
+        term.onData(function(data) {
+          if (socket && connected) {
+            socket.emit('data', data);
+          }
+        });
+
+        return { fitAddon };
+      }
+
+      // ── Socket connection ──────────────────────────────────────
+      function connectSocket() {
+        setStatus('connecting', 'Connecting to QuestShell…');
+
+        // Read the authenticated user from the page (set by server or header)
+        const urlParams = new URLSearchParams(window.location.search);
+        sessionUser = urlParams.get('user') || 'operator';
+        usernameEl.textContent = sessionUser;
+
+        socket = io('/ssh', {
+          path: '/terminal/socket.io',
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 10000,
+          timeout: 20000
+        });
+
+        socket.on('connect', function() {
+          connected = true;
+          setStatus('connected', 'Connected');
+          term.writeln('\x1b[32m✓ QuestShell session started\x1b[0m');
+          term.writeln('');
+
+          // Request session with backend-controlled params
+          // The server determines host/port/user — NOT the browser
+          socket.emit('ssh_session', {
+            cols: term.cols,
+            rows: term.rows
+          });
+        });
+
+        socket.on('data', function(data) {
+          term.write(typeof data === 'string' ? data : new Uint8Array(data));
+        });
+
+        socket.on('disconnect', function(reason) {
+          connected = false;
+          setStatus('connecting', 'Disconnected: ' + reason);
+          term.writeln('\x1b[31m✗ Connection lost: ' + reason + '\x1b[0m');
+        });
+
+        socket.on('connect_error', function(err) {
+          setStatus('connecting', 'Connection error');
+          term.writeln('\x1b[31m✗ Connection error: ' + err.message + '\x1b[0m');
+        });
+
+        socket.on('ssh_error', function(err) {
+          term.writeln('\x1b[31m✗ SSH error: ' + (err.message || err) + '\x1b[0m');
+        });
+
+        socket.on('session_end', function() {
+          connected = false;
+          setStatus('connecting', 'Session ended');
+          term.writeln('\x1b[33m Session ended by server\x1b[0m');
+        });
+
+        // Latency measurement
+        setInterval(function() {
+          if (socket && connected) {
+            const start = Date.now();
+            socket.emit('ping_time', function() {
+              latencyEl.textContent = (Date.now() - start) + 'ms';
+            });
+          }
+        }, 10000);
+      }
+
+      // ── Status UI ──────────────────────────────────────────────
+      function setStatus(state, text) {
+        statusDot.className = state;
+        statusText.textContent = text;
+      }
+
+      // ── Boot ───────────────────────────────────────────────────
+      document.addEventListener('DOMContentLoaded', function() {
+        initTerminal();
+        connectSocket();
+      });
+    })();
+  </script>
+</body>
+</html>

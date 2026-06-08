@@ -1,0 +1,112 @@
+# QuestShell — Docker Compose Stack
+# SideQuest Studios | sidequeststudios.xyz
+#
+# Architecture:
+#   terminalking.com (existing nginx-proxy with HTTPS)
+#     ├─ /*           →  terminalking-ghost (existing, UNAFFECTED)
+#     └─ /terminal/*  →  quest-shell app (internal, port 2222)
+#
+# Prerequisites:
+#   - nginx-proxy + acme-companion already running on host (the existing proxy stack)
+#   - Docker network "nginx-proxy" already exists (external)
+#   - DNS: terminalking.com A record points to this server
+#   - nginx vhost override placed at the path shown in scripts/setup.sh
+
+services:
+  quest-shell:
+    image: billchurch/webssh2:latest
+    container_name: quest-shell
+    restart: unless-stopped
+
+    # No published ports — traffic comes through nginx-proxy on the shared network
+    expose:
+      - "2222"
+
+    environment:
+      # ── WebSSH2 core ──────────────────────────────────────────────
+      - NODE_ENV=production
+      - WEBSSH2_LISTEN_IP=0.0.0.0
+      - WEBSSH2_LISTEN_PORT=2222
+
+      # ── Branding ──────────────────────────────────────────────────
+      - WEBSSH2_HEADER_TEXT=QuestShell
+      - WEBSSH2_HEADER_BACKGROUND=#1a1a2e
+
+      # ── Auth: trusted-proxy header identity ───────────────────────
+      # The nginx vhost adds X-Authenticated-User after validating the
+      # Basic-Auth header.  WebSSH2 reads this variable to bind the
+      # SSH session identity.  NEVER trust this from the public internet.
+      - WEBSSH2_TRUSTED_PROXY=true
+      - WEBSSH2_USERNAME=${QS_SSH_USERNAME}
+      - SSHHOST=${QS_SSH_HOST}
+      - SSHPORT=${QS_SSH_PORT}
+      - SSHUSERNAME=${QS_SSH_USERNAME}
+
+      # ── Security: subnet restriction ──────────────────────────────
+      - WEBSSH2_FORBIDDEN_IP addresses=${QS_FORBIDDEN_IPS}
+      - WEBSSH2_ALLOWED_IP addresses=${QS_ALLOWED_IPS}
+
+      # ── Session / socket tuning ────────────────────────────────────
+      - WEBSSH2_SOCKET_MAX_LIFETIME_MS=3600000
+      - WEBSSH2_MAX_SESSION_COUNT=10
+
+    volumes:
+      # Override the default index.html with our branded version
+      - ./branding/index.html:/srv/webssh2/dist/public/index.html:ro
+      # Custom CSS overrides
+      - ./branding/quest-shell.css:/srv/webssh2/dist/public/styles/quest-shell.css:ro
+
+    networks:
+      - quest-shell-internal
+      - nginx-proxy
+
+    # Production hardening: read-only rootfs, drop all caps, no new privs
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - NET_RAW
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http');http.get('http://127.0.0.1:2222/',(r)=>r.statusCode===200?process.exit(0):process.exit(1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "quest-shell"
+
+    # Labels for nginx-proxy auto-discovery
+    # VIRTUAL_HOST triggers nginx-proxy to generate a server block for terminalking.com
+    # The vhost.d override (vhost-terminalking.conf) then adds /terminal/ path routing + auth
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy=true"
+
+networks:
+  quest-shell-internal:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+  nginx-proxy:
+    external: true
