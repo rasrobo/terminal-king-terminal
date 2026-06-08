@@ -107,6 +107,6 @@ networks:
     internal: true
     ipam:
       config:
-        - subnet: 172.30.0.0/24
+        - subnet: 172.32.0.0/24
   nginx-proxy:
     external: true
