@@ -25,10 +25,10 @@ check() {
   local result="$2"
   if [ "$result" = "pass" ]; then
     echo -e "  ${PASS} ${desc}"
-    ((PASS_COUNT++))
+    PASS_COUNT=$((PASS_COUNT + 1))
   else
     echo -e "  ${FAIL} ${desc}"
-    ((FAIL_COUNT++))
+    FAIL_COUNT=$((FAIL_COUNT + 1))
   fi
 }
 

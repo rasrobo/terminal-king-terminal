@@ -55,6 +55,10 @@ services:
       - ./branding/index.html:/srv/webssh2/dist/public/index.html:ro
       # Custom CSS overrides
       - ./branding/terminal-king-terminal.css:/srv/webssh2/dist/public/styles/terminal-king-terminal.css:ro
+      # Landing page (served at /terminal/ by nginx)
+      - ./landing-page/index.html:/srv/webssh2/dist/public/landing.html:ro
+      # Landing page (served at /terminal/ by nginx)
+      - ./landing-page/index.html:/srv/webssh2/dist/public/landing.html:ro
 
     networks:
       - terminal-king-terminal-internal
