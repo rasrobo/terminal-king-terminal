@@ -2,6 +2,8 @@
 
 > **Secure, browser-based SSH terminal — open source.**
 
+**What's in it for you:** Access your servers from any browser — no SSH client, no VPN, no agent forwarding needed. Share terminal sessions with your team, embed a terminal in your own dashboard, or white-label it for your customers. Works anywhere you have a web browser.
+
 **Terminal King Terminal** is a production-ready, white-labeled browser-based SSH
 terminal built on [WebSSH2](https://github.com/billchurch/webssh2) (MIT licensed).
 
