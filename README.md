@@ -211,4 +211,4 @@ Built by [Side Quest Studios](https://sidequeststudios.xyz)
 
 If you find this project useful, consider [supporting development on Ko-fi](https://ko-fi.com/sidequeststudios).
 
-*Keywords: terminal utilities, CLI tools, open-source terminal, developer tooling, command-line interface*
+**Keywords:** terminal utilities, CLI tools, open-source terminal, developer tooling, command-line interface*
