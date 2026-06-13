@@ -202,3 +202,11 @@ This project is a security-hardened, white-labeled deployment of
 
 This project is open source. Contributions welcome at
 [github.com/rasrobo/terminal-king-terminal](https://github.com/rasrobo/terminal-king-terminal).
+
+---
+
+Built by [Side Quest Studios](https://sidequeststudios.xyz)
+
+If you find this project useful, consider [supporting development on Ko-fi](https://ko-fi.com/sidequeststudios).
+
+*Keywords: terminal utilities, CLI tools, open-source terminal, developer tooling, command-line interface*
